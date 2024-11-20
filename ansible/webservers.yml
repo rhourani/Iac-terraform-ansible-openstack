@@ -1,0 +1,35 @@
+---
+
+- name: Configure webserver with nginx
+  hosts: csc_vms
+  become: True
+  tasks:
+    - name: Ensure nginx is installed
+      package: name=nginx update_cache=yes
+
+    - name: Copy nginx config file
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx/sites-available/default
+
+    - name: Enable configuration
+      file: >
+        dest=/etc/nginx/sites-enabled/default
+        src=/etc/nginx/sites-available/default
+        state=link
+
+    - name: Copy index.html
+      template: >
+        src=index.html.j2
+        dest=/usr/share/nginx/html/index.html
+
+    - name: Restart nginx
+      service: name=nginx state=restarted
+
+- name: Configure HTTP load balancer with nginx
+  hosts: csc_proxy
+
+- name: Configure webserver with nginx
+  hosts: csc_vms
+
+...
