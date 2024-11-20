@@ -1,13 +1,13 @@
-resource "openstack_compute_keypair_v2" "cloud-key" {
-  name       = "ridvanKey"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSXNHRNERD+4CMML2cLXCDLAgZ2KlvwXCTwv26IkSxPzscUJyttUrwH5BrgSPnpApkmSIJKAE60HYrEt/8rxysjGuU6MHKzE36Tnvpcqo5qVFYkzHToC5Vj035vCDE9y7bbaqPJLYcu1Mn0omBB6SIFG+7Q225l4m026FngreLcozDk9sqYmqarpyZFxZZlfOgJQt+N+YeDQdcO3RB7jbzCJceC9QxExWSDbEA1adJxYUo82FtStj1vDKge+vArkkz0H7GqjljX+s63yuLC6jm/Tx7RnWgi3v864tucKTcwn2phUiScPFrpLC91PUxVaxYW+DmLogse2lfhB0SV7Lp"
+resource "openstack_compute_keypair_v2" "master_key" {
+  name       = "master"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCil0P1jjiuPmEPF8zdySOC55t70pYdNESXUKOngZsQd6e4yTeOhZ8iZtCFpzVtiF3qLDCcDAwuScB2hw0+LDQHHsNSLOZi3xR+H9w7yxRLEQfSKIhpuBnsmvUHOX/9vjezYmZt6C7+txr7Rk8gyjzvy/PHDxlzsl8Z5owhbcmsxvW+JvQKqEjZkIDXQZqB/agAps54OFp8cmFkDMgZZseW7rmGLyIyuIZYzrWUIs8OshTgqebPFGMEOEzqYLLh28l9g6AYX/9QIES573ykcajGdCrIAFG6426B01BDGVTQVOLQvyugFUbYYJ1t7QFbpMdrX/tiNGJM/gUQgcgQTDb1 Generated-by-Nova"
 }
 
 resource "openstack_compute_instance_v2" "external_node" {
   name            = "VM-1"
   image_name      = "Ubuntu-24.04"
   flavor_name     = "standard.small"
-  key_pair        = "${openstack_compute_keypair_v2.cloud-key.name}"
+  key_pair        = "${openstack_compute_keypair_v2.master_key.name}"
   security_groups = [openstack_networking_secgroup_v2.secgroup_vm1.name]
 
   network {
@@ -19,7 +19,7 @@ resource "openstack_compute_instance_v2" "internal_nodes" {
   name            = "VM-${count.index+2}"
   image_name      = "Ubuntu-24.04"
   flavor_name     = "standard.small"
-  key_pair        = "${openstack_compute_keypair_v2.cloud-key.name}"
+  key_pair        = "${openstack_compute_keypair_v2.master_key.name}"
   security_groups = [openstack_networking_secgroup_v2.secgroup_vm_2_to_4.name]
   count           = 3
 
@@ -71,6 +71,22 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_vm1_inbound_http" {
   protocol = "tcp"
   remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.secgroup_vm1.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_vm1_outbound_ssh" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol = "tcp"
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.secgroup_vm1.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_vm_2_to_4_outbound_ssh" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol = "tcp"
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.secgroup_vm_2_to_4.id
 }
 
 resource "openstack_networking_secgroup_v2" "secgroup_vm_2_to_4" {
