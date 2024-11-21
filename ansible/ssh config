@@ -1,0 +1,26 @@
+This file to be added locally to the following path
+
+ridwan@ridwan-Virtual-Machine:~/.ssh$ cat config
+Host *
+  ForwardAgent yes
+
+Host jumphostname
+  Hostname 195.148.31.70
+  User ubuntu
+  Port 22 
+  IdentityFile /home/ridwan/Iac-terraform-ansible-openstack/ansible/master.pem
+
+Host vm-2
+  Hostname 192.168.1.119
+  User ubuntu
+  ProxyJump jumphostname
+
+Host vm-3                                                            
+  Hostname 192.168.1.143                           
+  User ubuntu                      
+  ProxyJump jumphostname
+
+Host vm-4                                                  
+  Hostname 192.168.1.91                            
+  User ubuntu                      
+  ProxyJump jumphostname
